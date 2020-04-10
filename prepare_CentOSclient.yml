@@ -1,0 +1,100 @@
+---
+- hosts: 172.16.50.20
+  remote_user: ansible
+  become: yes
+  vars:
+    password: $6$R1.wFvgTFLNygphk$ak4.6hG5at5SeVU5XcYVDkCp4/az7QwtIu4dIoaZdeMCGRUpDPv6iFbdLDfd2y7Ix1KhkQJOQ59nHffO/BOR90
+  tasks:
+  - name: update all the packages installed on the VM
+    yum:
+      name: "*"
+      state: latest
+      update_cache: true
+
+  - name: Add EPEL repository
+    yum_repository:
+      name: EPEL
+      description: EPEL YUM repository
+      baseurl: http://mirror.its.dal.ca/pub/epel/7/x86_64/
+      gpgcheck: no
+
+  - name: install python3
+    yum:
+      name: python3
+      state: latest
+
+  - name: set the host name to your Seneca user name
+    shell: "hostnamectl set-hostname dhtran6"
+  - name: install the git package
+    yum:
+      name: git
+      state: latest
+
+  - name: Make sure we have a wheel group
+    group:
+      name: wheel
+      state: present
+  - name:  create a new user with your Seneca_id with sudo access
+    user:
+      name: dhtran6
+      password: "{{ password }}"
+      groups: wheel
+      append: yes
+      state: present
+      createhome: yes
+
+
+- name: Exchange keys between master and server
+  become: yes
+  remote_user: ansible
+  hosts: 172.16.50.20
+  tasks:
+    - name: setup a directory .ssh
+      file:
+        path: "{{ item.dest }}"
+        mode: "{{ item.mode }}"
+        state: directory
+      with_items:
+        - { dest: '/home/dhtran6/.ssh', mode: '0755'}
+    - name: setup a directory .ssh
+      file:
+        path: "{{ item.dest }}"
+        mode: "{{ item.mode }}"
+        state: touch
+      with_items:
+        - { dest: '/home/dhtran6/.ssh/authorized_keys', mode: '0600'}
+    - name: Create SSH KeyGen
+      shell: >
+        ssh-keygen -q -b 4096 -t rsa -N "" -f ~dhtran6/.ssh/id_rsa creates="~dhtran6/.ssh/id_rsa"
+      become: true
+    - name: Copy the key add to authorized_keys using Ansible
+      authorized_key:
+        user: dhtran6
+        state: present
+        key: "{{ lookup('file','/home/dhtran6/.ssh/id_rsa.pub')}}"
+
+- name: Create OPS lab directories
+  hosts: 172.16.50.20
+  remote_user: ansible
+  become: yes
+  vars:
+    seneca_id: "dhtran6"
+  tasks:
+    - name: Create OPS Labs
+      file:
+        path: "{{ item.dest }}"
+        mode: "{{ item.mode }}"
+        state: directory
+      with_items:
+       - { dest: '/home/{{seneca_id}}/ops435/lab0', mode: '0755'}
+       - { dest: '/home/{{seneca_id}}/ops435/lab1', mode: '0755'}
+       - { dest: '/home/{{seneca_id}}/ops435/lab2', mode: '0755'}
+       - { dest: '/home/{{seneca_id}}/ops435/lab3', mode: '0755'}
+       - { dest: '/home/{{seneca_id}}/ops435/lab4', mode: '0755'}
+       - { dest: '/home/{{seneca_id}}/ops435/lab5', mode: '0755'}
+       - { dest: '/home/{{seneca_id}}/ops435/lab6', mode: '0755'}
+       - { dest: '/home/{{seneca_id}}/ops435/lab7', mode: '0755'}
+       - { dest: '/home/{{seneca_id}}/ops435/lab8', mode: '0755'}
+       - { dest: '/home/{{seneca_id}}/ops435/lab9', mode: '0755'}
+
+ 
