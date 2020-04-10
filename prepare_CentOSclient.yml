@@ -23,8 +23,8 @@
       name: python3
       state: latest
 
-  - name: set the host name to your Seneca user name
-    shell: "hostnamectl set-hostname dhtran6"
+  - name: set the host name to your user name
+    shell: "hostnamectl set-hostname henry"
   - name: install the git package
     yum:
       name: git
@@ -34,9 +34,9 @@
     group:
       name: wheel
       state: present
-  - name:  create a new user with your Seneca_id with sudo access
+  - name:  create a new user with your id with sudo access
     user:
-      name: dhtran6
+      name: henry
       password: "{{ password }}"
       groups: wheel
       append: yes
@@ -55,46 +55,46 @@
         mode: "{{ item.mode }}"
         state: directory
       with_items:
-        - { dest: '/home/dhtran6/.ssh', mode: '0755'}
+        - { dest: '/home/henry/.ssh', mode: '0755'}
     - name: setup a directory .ssh
       file:
         path: "{{ item.dest }}"
         mode: "{{ item.mode }}"
         state: touch
       with_items:
-        - { dest: '/home/dhtran6/.ssh/authorized_keys', mode: '0600'}
+        - { dest: '/home/henry/.ssh/authorized_keys', mode: '0600'}
     - name: Create SSH KeyGen
       shell: >
-        ssh-keygen -q -b 4096 -t rsa -N "" -f ~dhtran6/.ssh/id_rsa creates="~dhtran6/.ssh/id_rsa"
+        ssh-keygen -q -b 4096 -t rsa -N "" -f ~henry/.ssh/id_rsa creates="~henry/.ssh/id_rsa"
       become: true
     - name: Copy the key add to authorized_keys using Ansible
       authorized_key:
-        user: dhtran6
+        user: henry
         state: present
-        key: "{{ lookup('file','/home/dhtran6/.ssh/id_rsa.pub')}}"
+        key: "{{ lookup('file','/home/henry/.ssh/id_rsa.pub')}}"
 
-- name: Create OPS lab directories
+- name: Create lab directories
   hosts: 172.16.50.20
   remote_user: ansible
   become: yes
   vars:
-    seneca_id: "dhtran6"
+    id: "henry"
   tasks:
-    - name: Create OPS Labs
+    - name: Create Labs
       file:
         path: "{{ item.dest }}"
         mode: "{{ item.mode }}"
         state: directory
       with_items:
-       - { dest: '/home/{{seneca_id}}/ops435/lab0', mode: '0755'}
-       - { dest: '/home/{{seneca_id}}/ops435/lab1', mode: '0755'}
-       - { dest: '/home/{{seneca_id}}/ops435/lab2', mode: '0755'}
-       - { dest: '/home/{{seneca_id}}/ops435/lab3', mode: '0755'}
-       - { dest: '/home/{{seneca_id}}/ops435/lab4', mode: '0755'}
-       - { dest: '/home/{{seneca_id}}/ops435/lab5', mode: '0755'}
-       - { dest: '/home/{{seneca_id}}/ops435/lab6', mode: '0755'}
-       - { dest: '/home/{{seneca_id}}/ops435/lab7', mode: '0755'}
-       - { dest: '/home/{{seneca_id}}/ops435/lab8', mode: '0755'}
-       - { dest: '/home/{{seneca_id}}/ops435/lab9', mode: '0755'}
+       - { dest: '/home/{{id}}/Labs/lab0', mode: '0755'}
+       - { dest: '/home/{{id}}/Labs/lab1', mode: '0755'}
+       - { dest: '/home/{{id}}/Labs/lab2', mode: '0755'}
+       - { dest: '/home/{{id}}/Labs/lab3', mode: '0755'}
+       - { dest: '/home/{{id}}/Labs/lab4', mode: '0755'}
+       - { dest: '/home/{{id}}/Labs/lab5', mode: '0755'}
+       - { dest: '/home/{{id}}/Labs/lab6', mode: '0755'}
+       - { dest: '/home/{{id}}/Labs/lab7', mode: '0755'}
+       - { dest: '/home/{{id}}/Labs/lab8', mode: '0755'}
+       - { dest: '/home/{{id}}/Labs/lab9', mode: '0755'}
 
  
